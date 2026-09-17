@@ -1,0 +1,23 @@
+node_modules/
+**/node_modules/
+
+dist/
+**/dist/
+
+debug.log
+npm-debug.log*
+
+.DS_Store
+Thumbs.db
+
+.env
+.env.*
+
+coverage/
+.vite/
+
+*.tsbuildinfo
+
+# OS / editor
+.vscode/
+.idea/
