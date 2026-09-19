@@ -118,19 +118,19 @@ function CollaborativeForm({
 
           <div className="field-grid">
             <label className="field field-wide">
-              <FieldLabel label="Project name" lockedBy={projectName.lockedBy} presence={projectName.presence} />
+              <FieldLabel label="Project name" lockedBy={projectName.lockedBy} />
               <input {...form.register('projectName')} {...projectName} placeholder="Q4 product launch" />
             </label>
             <label className="field">
-              <FieldLabel label="Owner" lockedBy={owner.lockedBy} presence={owner.presence} />
+              <FieldLabel label="Owner" lockedBy={owner.lockedBy} />
               <input {...form.register('owner')} {...owner} placeholder="Name or team" />
             </label>
             <label className="field">
-              <FieldLabel label="Target date" lockedBy={targetDate.lockedBy} presence={targetDate.presence} />
+              <FieldLabel label="Target date" lockedBy={targetDate.lockedBy} />
               <input {...form.register('targetDate')} {...targetDate} type="date" />
             </label>
             <label className="field">
-              <FieldLabel label="Budget" lockedBy={budget.lockedBy} presence={budget.presence} />
+              <FieldLabel label="Budget" lockedBy={budget.lockedBy} />
               <input {...form.register('budget')} {...budget} inputMode="decimal" placeholder="$75,000" />
             </label>
           </div>
@@ -147,11 +147,11 @@ function CollaborativeForm({
 
           <div className="field-grid">
             <label className="field field-wide">
-              <FieldLabel label="Executive summary" lockedBy={summary.lockedBy} presence={summary.presence} />
+              <FieldLabel label="Executive summary" lockedBy={summary.lockedBy} />
               <textarea {...form.register('summary')} {...summary} rows={6} placeholder="Describe the outcome and why it matters." />
             </label>
             <label className="field field-wide">
-              <FieldLabel label="Risks and dependencies" lockedBy={risks.lockedBy} presence={risks.presence} />
+              <FieldLabel label="Risks and dependencies" lockedBy={risks.lockedBy} />
               <textarea {...form.register('risks')} {...risks} rows={5} placeholder="Capture blockers, dependencies, and open decisions." />
             </label>
           </div>
@@ -164,25 +164,16 @@ function CollaborativeForm({
 function FieldLabel({
   label,
   lockedBy,
-  presence,
 }: {
   label: string;
   lockedBy: CollaborativeUser | null;
-  presence: CollaborativeFieldPresence[];
 }): JSX.Element {
-  const activePresence = presence[0];
-  const caretLabel = activePresence
-    ? activePresence.selectionStart === activePresence.selectionEnd
-      ? `caret ${activePresence.selectionStart ?? 'unknown'}`
-      : `selection ${activePresence.selectionStart ?? 'unknown'}-${activePresence.selectionEnd ?? 'unknown'}`
-    : null;
-
   return (
     <span className="field-heading">
       <span>{label}</span>
       {lockedBy && (
         <span className="lock-chip" style={{ ['--presence-color' as string]: lockedBy.color ?? '#52705c' }}>
-          {lockedBy.name} editing{caretLabel ? `, ${caretLabel}` : ''}
+          {lockedBy.name} editing
         </span>
       )}
     </span>
