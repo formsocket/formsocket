@@ -109,10 +109,6 @@ export function CollaborativeProvider<TFieldValues extends FieldValues>({
     [],
   );
 
-  const isFieldLocked = useCallback((field: string) => (
-    presence.some((entry) => entry.field === field && entry.user.id !== collaborativeUser.id)
-  ), [collaborativeUser.id, presence]);
-
   const unregisterField = useCallback((field: string) => {
     delete fieldRefsRef.current[field];
   }, []);
@@ -200,10 +196,6 @@ export function CollaborativeProvider<TFieldValues extends FieldValues>({
   };
 
   const sendValue = useCallback((field: string, value: unknown) => {
-    if (isFieldLocked(field)) {
-      return;
-    }
-
     pendingChangesRef.current[field] = value as CollaborativeDocumentState[string];
     dirtyFieldsRef.current.add(field);
     setStatus((current) => ({ ...current, save: 'saving', error: null }));
@@ -213,7 +205,7 @@ export function CollaborativeProvider<TFieldValues extends FieldValues>({
     if (socket?.readyState === WebSocket.OPEN) {
       socket.send(JSON.stringify({ type: 'update', field, value }));
     }
-  }, [autosaveMs, isFieldLocked, scheduleSave]);
+  }, [autosaveMs, scheduleSave]);
 
   const sendPresence = useCallback((field: string | null, selection?: CollaborativeSelection) => {
     const socket = socketRef.current;
@@ -406,8 +398,6 @@ export function useCollaborativeField<TFieldValues extends FieldValues, TName ex
   const focusedRef = useRef(false);
   const value = context.form.watch(name as Path<TFieldValues>) as TFieldValues[TName];
   const fieldPresence = context.presence.filter((entry) => entry.field === fieldName && entry.user.id !== context.user.id);
-  const lockedBy = fieldPresence[0]?.user ?? null;
-  const disabled = Boolean(lockedBy);
 
   const syncFocusState = useCallback(() => {
     focusedRef.current = document.activeElement === elementRef.current;
@@ -421,28 +411,19 @@ export function useCollaborativeField<TFieldValues extends FieldValues, TName ex
 
   const onChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      if (disabled) {
-        return;
-      }
-
       const nextValue = event.target.value;
       context.form.setValue(name as Path<TFieldValues>, nextValue as never, { shouldDirty: true });
       context.sendValue(fieldName, nextValue);
       context.sendPresence(fieldName, getSelection(event.target));
       syncFocusState();
     },
-    [context, disabled, fieldName, name, syncFocusState],
+    [context, fieldName, name, syncFocusState],
   );
 
   const onFocus = useCallback((event?: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    if (disabled) {
-      event?.currentTarget.blur();
-      return;
-    }
-
     focusedRef.current = true;
     context.sendPresence(fieldName, getSelection(event?.currentTarget ?? elementRef.current as HTMLInputElement | HTMLTextAreaElement | null));
-  }, [context, disabled, fieldName]);
+  }, [context, fieldName]);
 
   const onBlur = useCallback(() => {
     focusedRef.current = false;
@@ -450,29 +431,19 @@ export function useCollaborativeField<TFieldValues extends FieldValues, TName ex
   }, [context]);
 
   const onSelect = useCallback((event: React.SyntheticEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    if (!disabled) {
-      context.sendPresence(fieldName, getSelection(event.currentTarget));
-    }
-  }, [context, disabled, fieldName]);
+    context.sendPresence(fieldName, getSelection(event.currentTarget));
+  }, [context, fieldName]);
 
   const onKeyUp = useCallback((event: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    if (!disabled) {
-      context.sendPresence(fieldName, getSelection(event.currentTarget));
-    }
-  }, [context, disabled, fieldName]);
-
-  useEffect(() => {
-    if (disabled && document.activeElement === elementRef.current) {
-      elementRef.current?.blur();
-    }
-  }, [disabled]);
+    context.sendPresence(fieldName, getSelection(event.currentTarget));
+  }, [context, fieldName]);
 
   const setRef = useCallback((node: HTMLInputElement | HTMLTextAreaElement | null) => {
     elementRef.current = node;
     syncFocusState();
   }, [syncFocusState]);
 
-  return { name: fieldName, value, ref: setRef, onChange, onSelect, onKeyUp, disabled, lockedBy, presence: fieldPresence, onFocus, onBlur };
+  return { name: fieldName, value, ref: setRef, onChange, onSelect, onKeyUp, disabled: false, lockedBy: null, presence: fieldPresence, onFocus, onBlur };
 }
 
 export function useCollaborativeContext<TFieldValues extends FieldValues>(): CollaborativeContextValue<TFieldValues> {

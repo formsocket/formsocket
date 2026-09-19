@@ -107,6 +107,55 @@ test('syncs form fields once over WebSocket and broadcasts persisted form state'
   assert.deepEqual(await persistedAtTwo, await persistedAtOne);
 });
 
+test('allows same-field updates without a presence lock', async (context) => {
+  let persisted: PersistedDocument = { data: {}, revision: 0, updatedAt: null };
+  const server = new CollaborativeServer({
+    port: 0,
+    persistence: {
+      load: () => persisted,
+      patch: (_formId, changes) => {
+        persisted = {
+          data: { ...persisted.data, ...changes },
+          revision: persisted.revision + 1,
+          updatedAt: '2026-09-18T00:00:00.000Z',
+        };
+        return persisted;
+      },
+    },
+  });
+  await server.whenReady();
+  context.after(() => server.close());
+
+  const endpoint = `ws://127.0.0.1:${server.port}/form/project-brief`;
+  const editorOne = await connect(endpoint);
+  const editorTwo = await connect(endpoint);
+  context.after(async () => {
+    await Promise.all([closeClient(editorOne), closeClient(editorTwo)]);
+  });
+
+  const remoteUpdate = editorTwo.waitForMessage((message) => message.type === 'update');
+  editorOne.socket.send(JSON.stringify({ type: 'presence', field: 'title', user: { id: 'alice', name: 'Alice' } }));
+  editorOne.socket.send(JSON.stringify({ type: 'update', field: 'title', value: 'Alpha' }));
+
+  const message = await remoteUpdate;
+  assert.deepEqual(message, {
+    type: 'update',
+    documentId: 'project-brief',
+    field: 'title',
+    value: 'Alpha',
+  });
+
+  const response = await fetch(`http://127.0.0.1:${server.port}/api/documents/project-brief`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ changes: { title: 'Beta' } satisfies CollaborativeDocumentState }),
+  });
+
+  assert.equal(response.status, 200);
+  const body = await response.json() as { data: Record<string, unknown> };
+  assert.equal(body.data.title, 'Beta');
+});
+
 test('rejects invalid form patches before calling persistence', async (context) => {
   const server = new CollaborativeServer({
     port: 0,

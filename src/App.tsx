@@ -118,19 +118,19 @@ function CollaborativeForm({
 
           <div className="field-grid">
             <label className="field field-wide">
-              <FieldLabel label="Project name" lockedBy={projectName.lockedBy} />
+              <FieldLabel label="Project name" />
               <input {...form.register('projectName')} {...projectName} placeholder="Q4 product launch" />
             </label>
             <label className="field">
-              <FieldLabel label="Owner" lockedBy={owner.lockedBy} />
+              <FieldLabel label="Owner" />
               <input {...form.register('owner')} {...owner} placeholder="Name or team" />
             </label>
             <label className="field">
-              <FieldLabel label="Target date" lockedBy={targetDate.lockedBy} />
+              <FieldLabel label="Target date" />
               <input {...form.register('targetDate')} {...targetDate} type="date" />
             </label>
             <label className="field">
-              <FieldLabel label="Budget" lockedBy={budget.lockedBy} />
+              <FieldLabel label="Budget" />
               <input {...form.register('budget')} {...budget} inputMode="decimal" placeholder="$75,000" />
             </label>
           </div>
@@ -147,11 +147,11 @@ function CollaborativeForm({
 
           <div className="field-grid">
             <label className="field field-wide">
-              <FieldLabel label="Executive summary" lockedBy={summary.lockedBy} />
+              <FieldLabel label="Executive summary" />
               <textarea {...form.register('summary')} {...summary} rows={6} placeholder="Describe the outcome and why it matters." />
             </label>
             <label className="field field-wide">
-              <FieldLabel label="Risks and dependencies" lockedBy={risks.lockedBy} />
+              <FieldLabel label="Risks and dependencies" />
               <textarea {...form.register('risks')} {...risks} rows={5} placeholder="Capture blockers, dependencies, and open decisions." />
             </label>
           </div>
@@ -163,19 +163,12 @@ function CollaborativeForm({
 
 function FieldLabel({
   label,
-  lockedBy,
 }: {
   label: string;
-  lockedBy: CollaborativeUser | null;
 }): JSX.Element {
   return (
     <span className="field-heading">
       <span>{label}</span>
-      {lockedBy && (
-        <span className="lock-chip" style={{ ['--presence-color' as string]: lockedBy.color ?? '#52705c' }}>
-          {lockedBy.name} editing
-        </span>
-      )}
     </span>
   );
 }

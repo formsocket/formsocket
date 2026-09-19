@@ -179,11 +179,6 @@ export class CollaborativeServer {
       return;
     }
 
-    if (this.isFieldLockedByAnotherClient(documentId, payload.field, sender)) {
-      this.sendPresenceState(documentId, sender);
-      return;
-    }
-
     const message: CollaborativeServerPayload = {
       type: 'update',
       documentId,
@@ -216,11 +211,6 @@ export class CollaborativeServer {
     }
 
     if (!payload.field || typeof payload.field !== 'string') {
-      return;
-    }
-
-    if (this.isFieldLockedByAnotherClient(documentId, payload.field, sender)) {
-      this.sendPresenceState(documentId, sender);
       return;
     }
 
@@ -364,20 +354,6 @@ export class CollaborativeServer {
 
   private getPresenceState(documentId: string): CollaborativeFieldPresence[] {
     return [...(this.presence.get(documentId)?.values() ?? [])];
-  }
-
-  private isFieldLockedByAnotherClient(documentId: string, field: string, sender: WebSocket): boolean {
-    const roomPresence = this.presence.get(documentId);
-    if (!roomPresence) {
-      return false;
-    }
-
-    for (const [client, presence] of roomPresence) {
-      if (client !== sender && presence.field === field) {
-        return true;
-      }
-    }
-    return false;
   }
 
   private broadcast(documentId: string, message: CollaborativeServerMessage): void {
