@@ -1,12 +1,13 @@
 # Formsocket
 
-Formsocket is a lightweight collaborative form framework for React applications. It gives you a small abstraction over React Hook Form and a Node WebSocket server so that form fields can sync across clients with a simple, last-write-wins model.
+Formsocket is a lightweight collaborative form framework for React applications and Python services. It gives you a small abstraction over React Hook Form plus a WebSocket server so that form fields can sync across clients with a simple, last-write-wins model. The same protocol is also available in a FastAPI reference backend for Python developers.
 
 ## Features
 
 - Real-time collaboration for individual form fields
 - WebSocket room-based realtime syncing
 - React Hook Form integration
+- FastAPI/Python reference backend support
 - Debounced HTTP autosave with retry
 - Revisioned persistence adapters
 - Cursor-protection logic to prevent field focus jumping during active editing
@@ -14,17 +15,35 @@ Formsocket is a lightweight collaborative form framework for React applications.
 
 ## Packages
 
-This monorepo contains two published packages:
+This monorepo includes three supported integration paths:
 
 - `@formsocket/react` — frontend collaborative form hooks and provider
 - `@formsocket/server` — Node WebSocket router/state manager
+- `formsocket-python` — FastAPI reference backend implementing the same client protocol
 
-It also includes `packages/python`, a FastAPI reference backend that implements the same client protocol. It is independently installable as `formsocket-python`.
+The Python package lives in `packages/python` and is designed to work with the same form IDs, real-time update messages, and persistence endpoints used by the JavaScript client.
 
 ## Installation
 
+### JavaScript
+
 ```bash
 npm install @formsocket/react @formsocket/server
+```
+
+### Python
+
+From this repository:
+
+```bash
+python -m venv .venv
+.venv/bin/pip install -e "packages/python[test]"
+```
+
+Or from a Python project that depends on the package:
+
+```bash
+pip install formsocket-python
 ```
 
 ## Run the demo
@@ -37,6 +56,14 @@ npm run dev
 ```
 
 Open the Vite URL shown in the terminal, then select **Open second editor** to test concurrent changes. Both windows use the same document ID from the `?document=` query parameter. Changes persist to `formsocket.sqlite`; restart the server and reopen the document to verify they reload.
+
+The same collaborative protocol is also available in the Python backend. If you are building a Python stack, run the FastAPI app with:
+
+```bash
+python -m venv .venv
+.venv/bin/pip install -e "packages/python[test]"
+.venv/bin/uvicorn formsocket_python.app:app --host 0.0.0.0 --port 8080
+```
 
 ## Quick start
 
@@ -101,6 +128,8 @@ Realtime field changes travel over WebSocket. Initial loading and durable autosa
 
 The Python reference server is compatible with `@formsocket/react`; point the provider at the same paths using the Python server's host and port.
 
+This is the recommended option for Python developers who want to run the same collaborative form protocol in a FastAPI service without rewriting the backend in Node.
+
 ```bash
 python -m venv .venv
 .venv/bin/pip install -e "packages/python[test]"
@@ -108,6 +137,8 @@ python -m venv .venv
 ```
 
 `create_app()` accepts a `FormStore` implementation with async `load(form_id)` and `patch(form_id, changes)` methods. `InMemoryFormStore` is the default for development; production applications should supply a database-backed store with atomic revision increments.
+
+This makes Python a first-class option for Formsocket integrations, especially when the rest of your stack is already FastAPI-based.
 
 Run the Python protocol tests with:
 
