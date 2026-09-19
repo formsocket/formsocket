@@ -7,6 +7,7 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "build": "tsc --noEmit",
+    "test": "npm --workspace @formsocket/server test",
     "server": "npm --workspace @formsocket/server run start",
     "predev": "npm --workspace @formsocket/react run build && npm --workspace @formsocket/server run build",
     "dev": "npm run predev && concurrently \"npm run server\" \"vite --host 0.0.0.0 --port 5173\""

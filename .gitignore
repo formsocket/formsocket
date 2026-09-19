@@ -12,11 +12,28 @@ Thumbs.db
 
 .env
 .env.*
+.venv/
+**/.venv/
 
 coverage/
 .vite/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
 
 *.tsbuildinfo
+
+# Python package metadata / build artifacts
+*.egg-info/
+**/*.egg-info/
+.pytest_cache/
+**/.pytest_cache/
+__pycache__/
+**/__pycache__/
+*.pyc
+**/*.pyc
+build/
+**/build/
 
 # OS / editor
 .vscode/
