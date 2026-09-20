@@ -2,6 +2,9 @@
 
 Formsocket is a lightweight collaborative form framework for React applications and Python services. It gives you a small abstraction over React Hook Form plus a WebSocket server so that form fields can sync across clients with a simple, last-write-wins model. The same protocol is also available in a FastAPI reference backend for Python developers.
 
+https://github.com/user-attachments/assets/13aed440-00cb-4831-99d4-c327d290a060
+
+
 ## Features
 
 - Real-time collaboration for individual form fields
